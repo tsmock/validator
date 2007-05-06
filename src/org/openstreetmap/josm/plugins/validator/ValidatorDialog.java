@@ -96,28 +96,39 @@ public class ValidatorDialog extends ToggleDialog implements ActionListener
     @SuppressWarnings("unchecked")
     private void fixErrors(ActionEvent e) 
     {
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode)tree.getLastSelectedPathComponent();
-        if( node == null )
+        TreePath[] selectionPaths = tree.getSelectionPaths();
+        if( selectionPaths == null )
             return;
-
+        
         Bag<String, Command> commands = new Bag<String, Command>();
-
-        Enumeration<DefaultMutableTreeNode> children = node.breadthFirstEnumeration();
-        while( children.hasMoreElements() )
+        Set<DefaultMutableTreeNode> processedNodes = new HashSet<DefaultMutableTreeNode>();
+        for( TreePath path : selectionPaths )
         {
-            DefaultMutableTreeNode childNode = children.nextElement();
-            Object nodeInfo = childNode.getUserObject();
-            if( nodeInfo instanceof TestError)
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
+            if( node == null )
+                continue;
+            
+            Enumeration<DefaultMutableTreeNode> children = node.breadthFirstEnumeration();
+            while( children.hasMoreElements() )
             {
-                TestError error = (TestError)nodeInfo;
-                Command fixCommand = error.getFix();
-                if( fixCommand != null )
+                DefaultMutableTreeNode childNode = children.nextElement();
+                if( processedNodes.contains(childNode) )
+                    continue;
+                
+                processedNodes.add(childNode);
+                Object nodeInfo = childNode.getUserObject();
+                if( nodeInfo instanceof TestError)
                 {
-                    commands.add(error.getMessage(), fixCommand);
+                    TestError error = (TestError)nodeInfo;
+                    Command fixCommand = error.getFix();
+                    if( fixCommand != null )
+                    {
+                        commands.add(error.getMessage(), fixCommand);
+                    }
                 }
             }
         }
-        
+            
         Command fixCommand = null;
         if( commands.size() == 0 )
             return;
