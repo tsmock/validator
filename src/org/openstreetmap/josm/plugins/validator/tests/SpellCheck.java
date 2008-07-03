@@ -214,7 +214,7 @@ public class SpellCheck extends Test
     {
         checkPrimitive(w);
     }
-    
+
     /**
      * Checks the spelling of the primitive properties
      * @param p The primitive to check
@@ -223,7 +223,7 @@ public class SpellCheck extends Test
     {
         // Just a collection to know if a primitive has been already marked with error
         Bag<OsmPrimitive, String> withErrors = new Bag<OsmPrimitive, String>();
-        
+
         Map<String, String> props = (p.keys == null) ? Collections.<String, String>emptyMap() : p.keys;
         for(Entry<String, String> prop: props.entrySet() )
         {
@@ -236,8 +236,18 @@ public class SpellCheck extends Test
             }
             if( checkKeys && spellCheckKeyData.containsKey(key) && !withErrors.contains(p, "IPK"))
             {
-                errors.add( new TestError(this, Severity.WARNING, tr("Invalid property keys"), p, INVALID_KEY) );
+                errors.add( new TestError(this, Severity.WARNING, tr("Invalid property key ''{0}''", key), p, INVALID_KEY) );
                 withErrors.add(p, "IPK");
+            }
+            if( checkKeys && key.indexOf(" ") >= 0 && !withErrors.contains(p, "IPK"))
+            {
+                errors.add( new TestError(this, Severity.WARNING, tr("Invalid white space in property key ''{0}''", key), p, INVALID_KEY) );
+                withErrors.add(p, "IPK");
+            }
+            if( checkValues && value != null && (value.startsWith(" ") || value.endsWith(" ")) && !withErrors.contains(p, "SPACE"))
+            {
+                errors.add( new TestError(this, Severity.OTHER, tr("Property values start or end with white space"), p, INVALID_VALUE) );
+                withErrors.add(p, "SPACE");
             }
             if( checkValues && value != null && value.length() > 0 && spellCheckValueData != null)
             {
@@ -250,8 +260,8 @@ public class SpellCheck extends Test
             }
             if( checkFixmes && value != null && value.length() > 0 )
             {
-                if( (value.contains("FIXME") || key.contains("todo") || key.contains("fixme"))
-                  && !withErrors.contains(p, "FIXME"))
+                if( (value.contains("FIXME") || value.contains("check and delete") || key.contains("todo") || key.contains("fixme"))
+                && !withErrors.contains(p, "FIXME"))
                 {
                     errors.add( new TestError(this, Severity.OTHER, tr("FIXMES"), p, FIXME) );
                     withErrors.add(p, "FIXME");
@@ -259,7 +269,7 @@ public class SpellCheck extends Test
             }
         }
     }
-    
+
     /**
      * Parse an anotation preset from a stream
      * 
