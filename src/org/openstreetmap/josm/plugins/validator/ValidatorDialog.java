@@ -36,21 +36,18 @@ public class ValidatorDialog extends ToggleDialog implements ActionListener
     /** Serializable ID */
     private static final long serialVersionUID = 2952292777351992696L;
 
-    /**
-     * The display tree.
-     */
+    /** The display tree */
     protected ErrorTreePanel tree;
 
-    /** 
-     * The fix button
-     */
+    /** The fix button */
     private JButton fixButton;
-    
-    /** 
-     * The select button
-     */
+
+    /** The ignore button */
+    private JButton ignoreButton;
+
+    /** The select button */
     private JButton selectButton;
-    
+
     /** Last selected element */
     private DefaultMutableTreeNode lastSelectedNode = null;
 
@@ -61,7 +58,7 @@ public class ValidatorDialog extends ToggleDialog implements ActionListener
         super(tr("Validation errors"), "validator", tr("Open the validation window."), KeyEvent.VK_V, 150);
 
         this.plugin = plugin;
-        
+
         tree = new ErrorTreePanel();
         tree.addMouseListener(new ClickWatch());
         tree.addTreeSelectionListener(new SelectionWatch());
@@ -70,15 +67,17 @@ public class ValidatorDialog extends ToggleDialog implements ActionListener
 
         JPanel buttonPanel = new JPanel(new GridLayout(1,2));
 
-        selectButton = Util.createButton("Select", "mapmode/selection/select", "Set the selected elements on the map to the selected items in the list above.", this);
+        selectButton = Util.createButton(tr("Select"), "select", "mapmode/selection/select",
+        tr("Set the selected elements on the map to the selected items in the list above."), this);
         selectButton.setEnabled(false);
-        buttonPanel.add(selectButton); 
-        //add(buttonPanel, BorderLayout.SOUTH);
-        buttonPanel.add(Util.createButton("Validate", "dialogs/refresh", "Validate the data.", this)); 
-        // add(buttonPanel, BorderLayout.SOUTH);
-        fixButton = Util.createButton("Fix", "dialogs/fix", "Fix the selected errors.", this);
+        buttonPanel.add(selectButton);
+        buttonPanel.add(Util.createButton(tr("Validate"), "validate", "dialogs/refresh", tr("Validate the data."), this));
+        fixButton = Util.createButton(tr("Fix"), "fix", "dialogs/fix", tr("Fix the selected errors."), this);
         fixButton.setEnabled(false);
-        buttonPanel.add(fixButton); 
+        buttonPanel.add(fixButton);
+        ignoreButton = Util.createButton(tr("Ignore"), "ignore", "dialogs/delete", tr("Ignore the selected errors next time."), this);
+        ignoreButton.setEnabled(false);
+        buttonPanel.add(ignoreButton);
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
@@ -138,7 +137,49 @@ public class ValidatorDialog extends ToggleDialog implements ActionListener
                
         plugin.validateAction.doValidate(e, false);
     }	
-    
+
+    /**
+     * Set selected errors to ignore state
+     * @param e
+     */
+    @SuppressWarnings("unchecked")
+    private void ignoreErrors(ActionEvent e)
+    {
+        TreePath[] selectionPaths = tree.getSelectionPaths();
+        if( selectionPaths == null )
+            return;
+
+        Set<DefaultMutableTreeNode> processedNodes = new HashSet<DefaultMutableTreeNode>();
+        for( TreePath path : selectionPaths )
+        {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
+            if( node == null )
+                continue;
+
+            Enumeration<DefaultMutableTreeNode> children = node.breadthFirstEnumeration();
+            while( children.hasMoreElements() )
+            {
+                DefaultMutableTreeNode childNode = children.nextElement();
+                if( processedNodes.contains(childNode) )
+                    continue;
+
+                processedNodes.add(childNode);
+                Object nodeInfo = childNode.getUserObject();
+                if( nodeInfo instanceof TestError)
+                {
+                    TestError error = (TestError)nodeInfo;
+                    String error.getIgnoreState();
+/* ignore */
+                }
+            }
+        }
+
+        Main.map.repaint();
+        DataSet.fireSelectionChanged(Main.ds.getSelected());
+
+        plugin.validateAction.doValidate(e, false);
+    }
+
     /**
      * Sets the selection of the map to the current selected items.
      */
@@ -176,12 +217,14 @@ public class ValidatorDialog extends ToggleDialog implements ActionListener
     public void actionPerformed(ActionEvent e) 
     {
         String actionCommand = e.getActionCommand();
-        if( actionCommand.equals("Select"))
+        if( actionCommand.equals("select"))
             setSelectedItems();
-        else if( actionCommand.equals("Validate"))
+        else if( actionCommand.equals("validate"))
             plugin.validateAction.actionPerformed(e);
-        else if( actionCommand.equals("Fix"))
-            fixErrors(e); 
+        else if( actionCommand.equals("fix"))
+            fixErrors(e);
+        else if( actionCommand.equals("ignore"))
+            ignoreErrors(e);
     }
 
     /**
@@ -210,9 +253,9 @@ public class ValidatorDialog extends ToggleDialog implements ActionListener
                 }
             }  
         }
-        
+
         lastSelectedNode = node;
-        if( node == null ) 
+        if( node == null )
             return hasFixes;
 
         Enumeration<DefaultMutableTreeNode> children = node.breadthFirstEnumeration();
@@ -224,7 +267,7 @@ public class ValidatorDialog extends ToggleDialog implements ActionListener
             {
                 TestError error = (TestError)nodeInfo;
                 error.setSelected(true);
-                
+
                 hasFixes = hasFixes || error.isFixable();
                 if( addSelected )
                 {
@@ -233,54 +276,57 @@ public class ValidatorDialog extends ToggleDialog implements ActionListener
             }
         }
         selectButton.setEnabled(true);
+        ignoreButton.setEnabled(true);
         
         return hasFixes;
     }
-    
+
     /**
      * Watches for clicks.
      */
     public class ClickWatch extends MouseAdapter 
     {
-        @Override 
-        public void mouseClicked(MouseEvent e) 
+        @Override
+        public void mouseClicked(MouseEvent e)
         {
             fixButton.setEnabled(false);
+            ignoreButton.setEnabled(false);
             selectButton.setEnabled(false);
-            
+
             boolean isDblClick = e.getClickCount() > 1;
             Collection<OsmPrimitive> sel = isDblClick ? new HashSet<OsmPrimitive>(40) : null;
-            
+
             boolean hasFixes = setSelection(sel, isDblClick);
             fixButton.setEnabled(hasFixes);
-            
-            if( isDblClick)
+
+            if(isDblClick)
             {
                 Main.ds.setSelected(sel);
             }
         }
     }
-    
+
     /**
      * Watches for tree selection.
      */
     public class SelectionWatch implements TreeSelectionListener 
     {
         @SuppressWarnings("unchecked")
-        public void valueChanged(TreeSelectionEvent e) 
+        public void valueChanged(TreeSelectionEvent e)
         {
             fixButton.setEnabled(false);
+            ignoreButton.setEnabled(false);
             selectButton.setEnabled(false);
-            
+
             if(e.getSource() instanceof JScrollPane)
             {
                 System.out.println(e.getSource());
                 return;
             }
-            
+
             boolean hasFixes = setSelection(null, false);
             fixButton.setEnabled(hasFixes);
-            Main.map.repaint();            
+            Main.map.repaint();
         }
     }
 }
