@@ -1,5 +1,7 @@
 package org.openstreetmap.josm.plugins.validator;
 
+import static org.openstreetmap.josm.tools.I18n.tr;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -34,7 +36,7 @@ public class ValidateAction extends JosmAction
      * Constructor
      */
     public ValidateAction(OSMValidatorPlugin plugin) {
-        super("Validation", "validator", "Performs the data validation", KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK + KeyEvent.ALT_MASK, true);
+        super(tr("Validation"), "validator", tr("Performs the data validation"), KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK + KeyEvent.ALT_MASK, true);
         this.plugin = plugin;
     }
 
@@ -87,7 +89,7 @@ public class ValidateAction extends JosmAction
         }
 
         List<TestError> errors = new ArrayList<TestError>();
-        for(Test test : tests) 
+        for(Test test : tests)
         {
             test.setPartialSelection(lastSelection != null);
             test.startTest();
@@ -96,7 +98,17 @@ public class ValidateAction extends JosmAction
             errors.addAll( test.getErrors() );
         }
         tests = null;
-        
+        if(Main.pref.getBoolean(PreferenceEditor.PREF_USE_IGNORE, true))
+        {
+            for(TestError error : errors)
+            {
+                if(plugin.validationDialog.ignoredErrors.contains(error.getIgnoreState()))
+                {
+                    error.setIgnored(true);
+                }
+            }
+        }
+
         plugin.validationDialog.tree.setErrors(errors);
         plugin.validationDialog.setVisible(true);
         DataSet.fireSelectionChanged(Main.ds.getSelected());
