@@ -12,52 +12,55 @@ import org.openstreetmap.josm.plugins.validator.Test;
 import org.openstreetmap.josm.plugins.validator.TestError;
 import org.openstreetmap.josm.plugins.validator.util.Bag;
 import org.openstreetmap.josm.plugins.validator.util.Util;
+
 /**
  * Checks for similar named ways, symptom of a possible typo. It uses the
  * Levenshtein distance to check for similarity
- * 
+ *
  * @author frsantos
  */
-public class SimilarNamedWays extends Test 
+public class SimilarNamedWays extends Test
 {
+    protected static int SIMILAR_NAMED = 701;
+
     /** All ways, grouped by cells */
     Map<Point2D,List<Way>> cellWays;
     /** The already detected errors */
     Bag<Way, Way> errorWays;
-    
+
     /**
      * Constructor
      */
-    public SimilarNamedWays() 
+    public SimilarNamedWays()
     {
         super(tr("Similar named ways."),
               tr("This test checks for ways with similar names that may have been misspelled."));
     }
 
     @Override
-    public void startTest() 
+    public void startTest()
     {
         cellWays = new HashMap<Point2D,List<Way>>(1000);
         errorWays = new Bag<Way, Way>();
     }
 
     @Override
-    public void endTest() 
+    public void endTest()
     {
         cellWays = null;
         errorWays = null;
     }
-    
+
     @Override
-    public void visit(Way w) 
+    public void visit(Way w)
     {
         if( w.deleted || w.incomplete )
             return;
-        
+
         String name = w.get("name");
         if( name == null || name.length() < 6 )
             return;
-        
+
         List<List<Way>> theCellWays = Util.getWaysInCell(w, cellWays);
         for( List<Way> ways : theCellWays)
         {
@@ -65,28 +68,28 @@ public class SimilarNamedWays extends Test
             {
                 if( errorWays.contains(w, w2) || errorWays.contains(w2, w) )
                     continue;
-                
+
                 String name2 = w2.get("name");
                 if( name2 == null || name2.length() < 6 )
                     continue;
-                
+
                 int levenshteinDistance = getLevenshteinDistance(name, name2);
                 if( 0 < levenshteinDistance && levenshteinDistance <= 2 )
                 {
                     List<OsmPrimitive> primitives = new ArrayList<OsmPrimitive>();
                     primitives.add(w);
                     primitives.add(w2);
-                    errors.add( new TestError(this, Severity.WARNING, tr("Similar named ways"), primitives) );
+                    errors.add( new TestError(this, Severity.WARNING, tr("Similar named ways"), SIMILAR_NAMED, primitives) );
                     errorWays.add(w, w2);
                 }
             }
             ways.add(w);
         }
     }
-    
+
     /**
      * Compute Levenshtein distance
-     * 
+     *
      * @param s First word
      * @param t Second word
      * @return The distance between words
@@ -141,7 +144,6 @@ public class SimilarNamedWays extends Test
 
         // Step 7
         return d[n][m];
-
     }
 
     /**
