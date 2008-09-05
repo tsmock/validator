@@ -19,10 +19,10 @@ import org.openstreetmap.josm.plugins.validator.util.AgregatePrimitivesVisitor;
  * <p>
  * This action iterates through all active tests and give them the data, so that
  * each one can test it.
- * 
+ *
  * @author frsantos
  */
-public class ValidateAction extends JosmAction 
+public class ValidateAction extends JosmAction
 {
     private OSMValidatorPlugin plugin;
 
@@ -31,12 +31,13 @@ public class ValidateAction extends JosmAction
 
     /** Last selection used to validate */
     private Collection<OsmPrimitive> lastSelection;
-    
+
     /**
      * Constructor
      */
     public ValidateAction(OSMValidatorPlugin plugin) {
-        super(tr("Validation"), "validator", tr("Performs the data validation"), KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK + KeyEvent.ALT_MASK, true);
+        super(tr("Validation"), "validator", tr("Performs the data validation"),
+        KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK + KeyEvent.ALT_MASK, true);
         this.plugin = plugin;
     }
 
@@ -44,14 +45,14 @@ public class ValidateAction extends JosmAction
     {
         doValidate(ev, true);
     }
-    
+
     /**
      * Does the validation.
      * <p>
      * If getSelectedItems is true, the selected items (or all items, if no one
      * is selected) are validated. If it is false, last selected items are
      * revalidated
-     * 
+     *
      * @param ev The event
      * @param getSelectedItems If selected or last selected items must be validated
      */
@@ -59,11 +60,11 @@ public class ValidateAction extends JosmAction
     {
         if( plugin.validateAction == null || Main.map == null || !Main.map.isVisible() )
             return;
-        
+
         Collection<Test> tests = OSMValidatorPlugin.getEnabledTests(false);
         if( tests.isEmpty() )
             return;
-        
+
         Collection<OsmPrimitive> selection;
         if( getSelectedItems )
         {
@@ -108,7 +109,7 @@ public class ValidateAction extends JosmAction
                 s.add(error.getIgnoreSubGroup());
                 for(String state : s)
                 {
-                    if(state != null && plugin.validationDialog.ignoredErrors.contains(state))
+                    if(state != null && plugin.ignoredErrors.contains(state))
                     {
                         error.setIgnored(true);
                     }
