@@ -61,20 +61,16 @@ public class ErrorLayer extends Layer implements LayerChangeListener
         DefaultMutableTreeNode severity = (DefaultMutableTreeNode)root.getLastChild();
         while( severity != null )
         {
-            Enumeration<DefaultMutableTreeNode> errorMessages = severity.children();
-            while( errorMessages.hasMoreElements() )
+            Enumeration<DefaultMutableTreeNode> errorMessages = severity.breadthFirstEnumeration();
+            while(errorMessages.hasMoreElements())
             {
-                DefaultMutableTreeNode errorMessage = errorMessages.nextElement();
-                Enumeration<DefaultMutableTreeNode> errors = errorMessage.children();
-                while( errors.hasMoreElements() )
-                {
-                    TestError error = (TestError)errors.nextElement().getUserObject();
-                    error.paint(g, mv);
-                }
+                Object tn = errorMessages.nextElement().getUserObject();
+                if(tn instanceof TestError)
+                    ((TestError)tn).paint(g, mv);
             }
             
             // Severities in inverse order
-            severity= severity.getPreviousSibling();
+            severity = severity.getPreviousSibling();
         }
     }
 
