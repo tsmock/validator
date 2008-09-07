@@ -1,13 +1,19 @@
 package org.openstreetmap.josm.plugins.validator;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Point;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 
 import org.openstreetmap.josm.command.Command;
-import org.openstreetmap.josm.data.osm.*;
+import org.openstreetmap.josm.data.osm.Node;
+import org.openstreetmap.josm.data.osm.OsmPrimitive;
+import org.openstreetmap.josm.data.osm.Relation;
+import org.openstreetmap.josm.data.osm.Way;
+import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.data.osm.visitor.Visitor;
 import org.openstreetmap.josm.gui.MapView;
 
@@ -15,8 +21,7 @@ import org.openstreetmap.josm.gui.MapView;
  * Validation error
  * @author frsantos
  */
-public class TestError
-{
+public class TestError {
     /** is this error on the ignore list */
     private Boolean ignored = false;
     /** Severity */
@@ -46,8 +51,8 @@ public class TestError
      * @param primitives The affected primitives
      * @param code The test error reference code
      */
-    public TestError(Test tester, Severity severity, String message, String description, String description_en, int code,
-            List<? extends OsmPrimitive> primitives, List<?> highlighted) {
+    public TestError(Test tester, Severity severity, String message, String description, String description_en,
+            int code, List<? extends OsmPrimitive> primitives, List<?> highlighted) {
         this.tester = tester;
         this.severity = severity;
         this.message = message;
@@ -57,26 +62,28 @@ public class TestError
         this.highlighted = highlighted;
         this.code = code;
     }
-    public TestError(Test tester, Severity severity, String message, int code, List<? extends OsmPrimitive> primitives, List<?> highlighted)
-    {
+
+    public TestError(Test tester, Severity severity, String message, int code, List<? extends OsmPrimitive> primitives,
+            List<?> highlighted) {
         this(tester, severity, message, null, null, code, primitives, highlighted);
     }
+
     public TestError(Test tester, Severity severity, String message, String description, String description_en,
-    int code, List<? extends OsmPrimitive> primitives)
-    {
+            int code, List<? extends OsmPrimitive> primitives) {
         this(tester, severity, message, description, description_en, code, primitives, primitives);
     }
-    public TestError(Test tester, Severity severity, String message, int code, List<? extends OsmPrimitive> primitives)
-    {
+
+    public TestError(Test tester, Severity severity, String message, int code, List<? extends OsmPrimitive> primitives) {
         this(tester, severity, message, null, null, code, primitives, primitives);
     }
-    public TestError(Test tester, Severity severity, String message, int code, OsmPrimitive primitive)
-    {
-        this(tester, severity, message, null, null, code, Collections.singletonList(primitive), Collections.singletonList(primitive));
+
+    public TestError(Test tester, Severity severity, String message, int code, OsmPrimitive primitive) {
+        this(tester, severity, message, null, null, code, Collections.singletonList(primitive), Collections
+                .singletonList(primitive));
     }
-    public TestError(Test tester, Severity severity, String message, String description,
-    String description_en, int code, OsmPrimitive primitive)
-    {
+
+    public TestError(Test tester, Severity severity, String message, String description, String description_en,
+            int code, OsmPrimitive primitive) {
         this(tester, severity, message, description, description_en, code, Collections.singletonList(primitive));
     }
 
@@ -84,8 +91,7 @@ public class TestError
      * Gets the error message
      * @return the error message
      */
-    public String getMessage()
-    {
+    public String getMessage() {
         return message;
     }
 
@@ -93,8 +99,7 @@ public class TestError
      * Gets the error message
      * @return the error description
      */
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
@@ -102,8 +107,7 @@ public class TestError
      * Sets the error message
      * @param message The error message
      */
-    public void setMessage(String message)
-    {
+    public void setMessage(String message) {
         this.message = message;
     }
 
@@ -111,8 +115,7 @@ public class TestError
      * Gets the list of primitives affected by this error
      * @return the list of primitives affected by this error
      */
-    public List<? extends OsmPrimitive> getPrimitives()
-    {
+    public List<? extends OsmPrimitive> getPrimitives() {
         return primitives;
     }
 
@@ -121,8 +124,7 @@ public class TestError
      * @param primitives the list of primitives affected by this error
      */
 
-    public void setPrimitives(List<OsmPrimitive> primitives)
-    {
+    public void setPrimitives(List<OsmPrimitive> primitives) {
         this.primitives = primitives;
     }
 
@@ -130,8 +132,7 @@ public class TestError
      * Gets the severity of this error
      * @return the severity of this error
      */
-    public Severity getSeverity()
-    {
+    public Severity getSeverity() {
         return severity;
     }
 
@@ -139,56 +140,51 @@ public class TestError
      * Sets the severity of this error
      * @param severity the severity of this error
      */
-    public void setSeverity(Severity severity)
-    {
+    public void setSeverity(Severity severity) {
         this.severity = severity;
     }
 
     /**
      * Sets the ignore state for this error
      */
-    public String getIgnoreState()
-    {
+    public String getIgnoreState() {
         Collection<String> strings = new TreeSet<String>();
         String ignorestring = getIgnoreSubGroup();
-        for (OsmPrimitive o : primitives)
-        {
+        for (OsmPrimitive o : primitives) {
             // ignore data not yet uploaded
-            if(o.id == 0)
+            if (o.id == 0)
                 return null;
             String type = "u";
-            if (o instanceof Way) type = "w";
-            else if (o instanceof Relation) type = "r";
-            else if (o instanceof Node) type = "n";
+            if (o instanceof Way)
+                type = "w";
+            else if (o instanceof Relation)
+                type = "r";
+            else if (o instanceof Node)
+                type = "n";
             strings.add(type + "_" + o.id);
         }
-        for (String o : strings)
-        {
+        for (String o : strings) {
             ignorestring += ":" + o;
         }
         return ignorestring;
     }
 
-    public String getIgnoreSubGroup()
-    {
+    public String getIgnoreSubGroup() {
         String ignorestring = getIgnoreGroup();
-        if(description_en != null)
-            ignorestring += "_"+description_en;
+        if (description_en != null)
+            ignorestring += "_" + description_en;
         return ignorestring;
     }
 
-    public String getIgnoreGroup()
-    {
+    public String getIgnoreGroup() {
         return Integer.toString(code);
     }
 
-    public void setIgnored(boolean state)
-    {
+    public void setIgnored(boolean state) {
         ignored = state;
     }
 
-    public Boolean getIgnored()
-    {
+    public Boolean getIgnored() {
         return ignored;
     }
 
@@ -196,8 +192,7 @@ public class TestError
      * Gets the tester that raised this error
      * @return the tester that raised this error
      */
-    public Test getTester()
-    {
+    public Test getTester() {
         return tester;
     }
 
@@ -205,8 +200,7 @@ public class TestError
      * Gets the code
      * @return the code
      */
-    public int getCode()
-    {
+    public int getCode() {
         return code;
     }
 
@@ -215,8 +209,7 @@ public class TestError
      *
      * @return true if the error can be fixed
      */
-    public boolean isFixable()
-    {
+    public boolean isFixable() {
         return tester != null && tester.isFixable(this);
     }
 
@@ -225,9 +218,8 @@ public class TestError
      *
      * @return The command to fix the error
      */
-    public Command getFix()
-    {
-        if( tester == null )
+    public Command getFix() {
+        if (tester == null)
             return null;
 
         return tester.fixError(this);
@@ -239,17 +231,19 @@ public class TestError
      * @param g The graphics
      * @param mv The MapView
      */
-    public void paint(Graphics g, MapView mv)
-    {
-        if(!ignored)
-        {
+    public void paint(Graphics g, MapView mv) {
+        if (!ignored) {
             PaintVisitor v = new PaintVisitor(g, mv);
-            for (Object o : highlighted) {
-                if (o instanceof OsmPrimitive)
-                    v.visit((OsmPrimitive) o);
-                else if (o instanceof WaySegment)
-                    v.visit((WaySegment) o);
-            }
+            visitHighlighted(v);
+        }
+    }
+
+    public void visitHighlighted(ValidatorVisitor v) {
+        for (Object o : highlighted) {
+            if (o instanceof OsmPrimitive)
+                v.visit((OsmPrimitive) o);
+            else if (o instanceof WaySegment)
+                v.visit((WaySegment) o);
         }
     }
 
@@ -257,8 +251,7 @@ public class TestError
      * Visitor that highlights the primitives affected by this error
      * @author frsantos
      */
-    class PaintVisitor implements Visitor
-    {
+    class PaintVisitor implements ValidatorVisitor, Visitor {
         /** The graphics */
         private final Graphics g;
         /** The MapView */
@@ -269,8 +262,7 @@ public class TestError
          * @param g The graphics
          * @param mv The Mapview
          */
-        public PaintVisitor(Graphics g, MapView mv)
-        {
+        public PaintVisitor(Graphics g, MapView mv) {
             this.g = g;
             this.mv = mv;
         }
@@ -286,16 +278,13 @@ public class TestError
          * @param n The node
          * @param color The circle color
          */
-        public void drawNode(Node n, Color color)
-        {
+        public void drawNode(Node n, Color color) {
             Point p = mv.getPoint(n.eastNorth);
             g.setColor(color);
-            if( selected )
-            {
-                g.fillOval(p.x-5, p.y-5, 10, 10);
-            }
-            else
-                g.drawOval(p.x-5, p.y-5, 10, 10);
+            if (selected) {
+                g.fillOval(p.x - 5, p.y - 5, 10, 10);
+            } else
+                g.drawOval(p.x - 5, p.y - 5, 10, 10);
         }
 
         /**
@@ -304,33 +293,32 @@ public class TestError
          * @param s The segment
          * @param color The color
          */
-        public void drawSegment(Node n1, Node n2, Color color)
-        {
+        public void drawSegment(Node n1, Node n2, Color color) {
             Point p1 = mv.getPoint(n1.eastNorth);
             Point p2 = mv.getPoint(n2.eastNorth);
             g.setColor(color);
 
-            double t = Math.atan2(p2.x-p1.x, p2.y-p1.y);
+            double t = Math.atan2(p2.x - p1.x, p2.y - p1.y);
             double cosT = Math.cos(t);
             double sinT = Math.sin(t);
-            int deg = (int)Math.toDegrees(t);
-            if( selected )
-            {
-                int[] x = new int[] {(int)(p1.x + 5*cosT), (int)(p2.x + 5*cosT), (int)(p2.x - 5*cosT), (int)(p1.x - 5*cosT)};
-                int[] y = new int[] {(int)(p1.y - 5*sinT), (int)(p2.y - 5*sinT), (int)(p2.y + 5*sinT), (int)(p1.y + 5*sinT)};
+            int deg = (int) Math.toDegrees(t);
+            if (selected) {
+                int[] x = new int[] { (int) (p1.x + 5 * cosT), (int) (p2.x + 5 * cosT), (int) (p2.x - 5 * cosT),
+                        (int) (p1.x - 5 * cosT) };
+                int[] y = new int[] { (int) (p1.y - 5 * sinT), (int) (p2.y - 5 * sinT), (int) (p2.y + 5 * sinT),
+                        (int) (p1.y + 5 * sinT) };
                 g.fillPolygon(x, y, 4);
-                g.fillArc(p1.x-5, p1.y-5, 10, 10, deg, 180 );
-                g.fillArc(p2.x-5, p2.y-5, 10, 10, deg, -180);
-            }
-            else
-            {
-                g.drawLine((int)(p1.x + 5*cosT), (int)(p1.y - 5*sinT), (int)(p2.x + 5*cosT), (int)(p2.y - 5*sinT));
-                g.drawLine((int)(p1.x - 5*cosT), (int)(p1.y + 5*sinT), (int)(p2.x - 5*cosT), (int)(p2.y + 5*sinT));
-                g.drawArc(p1.x-5, p1.y-5, 10, 10, deg, 180 );
-                g.drawArc(p2.x-5, p2.y-5, 10, 10, deg, -180);
+                g.fillArc(p1.x - 5, p1.y - 5, 10, 10, deg, 180);
+                g.fillArc(p2.x - 5, p2.y - 5, 10, 10, deg, -180);
+            } else {
+                g.drawLine((int) (p1.x + 5 * cosT), (int) (p1.y - 5 * sinT), (int) (p2.x + 5 * cosT),
+                        (int) (p2.y - 5 * sinT));
+                g.drawLine((int) (p1.x - 5 * cosT), (int) (p1.y + 5 * sinT), (int) (p2.x - 5 * cosT),
+                        (int) (p2.y + 5 * sinT));
+                g.drawArc(p1.x - 5, p1.y - 5, 10, 10, deg, 180);
+                g.drawArc(p2.x - 5, p2.y - 5, 10, 10, deg, -180);
             }
         }
-
 
         /**
          * Draw a small rectangle.
@@ -338,22 +326,19 @@ public class TestError
          *
          * @param n The node to draw.
          */
-        public void visit(Node n)
-        {
-            if( isNodeVisible(n) )
+        public void visit(Node n) {
+            if (isNodeVisible(n))
                 drawNode(n, severity.getColor());
         }
 
-        public void visit(Way w)
-        {
+        public void visit(Way w) {
             Node lastN = null;
             for (Node n : w.nodes) {
                 if (lastN == null) {
                     lastN = n;
                     continue;
                 }
-                if (isSegmentVisible(lastN, n))
-                {
+                if (isSegmentVisible(lastN, n)) {
                     drawSegment(lastN, n, severity.getColor());
                 }
                 lastN = n;
@@ -361,16 +346,15 @@ public class TestError
         }
 
         public void visit(WaySegment ws) {
-            if (ws.lowerIndex < 0 || ws.lowerIndex + 1 >= ws.way.nodes.size()) return;
-            Node a = ws.way.nodes.get(ws.lowerIndex),
-                 b = ws.way.nodes.get(ws.lowerIndex + 1);
+            if (ws.lowerIndex < 0 || ws.lowerIndex + 1 >= ws.way.nodes.size())
+                return;
+            Node a = ws.way.nodes.get(ws.lowerIndex), b = ws.way.nodes.get(ws.lowerIndex + 1);
             if (isSegmentVisible(a, b)) {
                 drawSegment(a, b, severity.getColor());
             }
         }
 
-        public void visit(Relation r)
-        {
+        public void visit(Relation r) {
             /* No idea how to draw a relation. */
         }
 
@@ -394,10 +378,14 @@ public class TestError
         protected boolean isSegmentVisible(Node n1, Node n2) {
             Point p1 = mv.getPoint(n1.eastNorth);
             Point p2 = mv.getPoint(n2.eastNorth);
-            if ((p1.x < 0) && (p2.x < 0)) return false;
-            if ((p1.y < 0) && (p2.y < 0)) return false;
-            if ((p1.x > mv.getWidth()) && (p2.x > mv.getWidth())) return false;
-            if ((p1.y > mv.getHeight()) && (p2.y > mv.getHeight())) return false;
+            if ((p1.x < 0) && (p2.x < 0))
+                return false;
+            if ((p1.y < 0) && (p2.y < 0))
+                return false;
+            if ((p1.x > mv.getWidth()) && (p2.x > mv.getWidth()))
+                return false;
+            if ((p1.y > mv.getHeight()) && (p2.y > mv.getHeight()))
+                return false;
             return true;
         }
     }
@@ -406,8 +394,7 @@ public class TestError
      * Sets the selection flag of this error
      * @param selected if this error is selected
      */
-    public void setSelected(boolean selected)
-    {
+    public void setSelected(boolean selected) {
         this.selected = selected;
     }
 }
