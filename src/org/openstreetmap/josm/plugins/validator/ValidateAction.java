@@ -22,8 +22,7 @@ import org.openstreetmap.josm.plugins.validator.util.AgregatePrimitivesVisitor;
  *
  * @author frsantos
  */
-public class ValidateAction extends JosmAction
-{
+public class ValidateAction extends JosmAction {
     private OSMValidatorPlugin plugin;
 
     /** Serializable ID */
@@ -36,13 +35,12 @@ public class ValidateAction extends JosmAction
      * Constructor
      */
     public ValidateAction(OSMValidatorPlugin plugin) {
-        super(tr("Validation"), "validator", tr("Performs the data validation"),
-        KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK + KeyEvent.ALT_MASK, true);
+        super(tr("Validation"), "validator", tr("Performs the data validation"), KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK
+                + KeyEvent.ALT_MASK, true);
         this.plugin = plugin;
     }
 
-    public void actionPerformed(ActionEvent ev)
-    {
+    public void actionPerformed(ActionEvent ev) {
         doValidate(ev, true);
     }
 
@@ -56,61 +54,51 @@ public class ValidateAction extends JosmAction
      * @param ev The event
      * @param getSelectedItems If selected or last selected items must be validated
      */
-    public void doValidate(@SuppressWarnings("unused") ActionEvent ev, boolean getSelectedItems)
-    {
-        if( plugin.validateAction == null || Main.map == null || !Main.map.isVisible() )
+    public void doValidate(ActionEvent ev, boolean getSelectedItems) {
+        if (plugin.validateAction == null || Main.map == null || !Main.map.isVisible())
             return;
 
+        OSMValidatorPlugin.plugin.initializeErrorLayer();
+
         Collection<Test> tests = OSMValidatorPlugin.getEnabledTests(false);
-        if( tests.isEmpty() )
+        if (tests.isEmpty())
             return;
 
         Collection<OsmPrimitive> selection;
-        if( getSelectedItems )
-        {
+        if (getSelectedItems) {
             selection = Main.ds.getSelected();
-            if( selection.isEmpty() )
-            {
+            if (selection.isEmpty()) {
                 selection = Main.ds.allNonDeletedPrimitives();
                 lastSelection = null;
-            }
-            else
-            {
+            } else {
                 AgregatePrimitivesVisitor v = new AgregatePrimitivesVisitor();
                 selection = v.visit(selection);
                 lastSelection = selection;
             }
-        }
-        else
-        {
-            if( lastSelection == null )
+        } else {
+            if (lastSelection == null)
                 selection = Main.ds.allNonDeletedPrimitives();
             else
                 selection = lastSelection;
         }
 
         List<TestError> errors = new ArrayList<TestError>();
-        for(Test test : tests)
-        {
+        for (Test test : tests) {
             test.setPartialSelection(lastSelection != null);
             test.startTest();
             test.visit(selection);
             test.endTest();
-            errors.addAll( test.getErrors() );
+            errors.addAll(test.getErrors());
         }
         tests = null;
-        if(Main.pref.getBoolean(PreferenceEditor.PREF_USE_IGNORE, true))
-        {
-            for(TestError error : errors)
-            {
+        if (Main.pref.getBoolean(PreferenceEditor.PREF_USE_IGNORE, true)) {
+            for (TestError error : errors) {
                 List<String> s = new ArrayList<String>();
                 s.add(error.getIgnoreState());
                 s.add(error.getIgnoreGroup());
                 s.add(error.getIgnoreSubGroup());
-                for(String state : s)
-                {
-                    if(state != null && plugin.ignoredErrors.contains(state))
-                    {
+                for (String state : s) {
+                    if (state != null && plugin.ignoredErrors.contains(state)) {
                         error.setIgnored(true);
                     }
                 }
