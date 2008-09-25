@@ -7,10 +7,10 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openstreetmap.josm.data.osm.OsmPrimitive;
-import org.openstreetmap.josm.data.osm.Way;
-import org.openstreetmap.josm.data.osm.OsmUtils;
 import org.openstreetmap.josm.data.coor.LatLon;
+import org.openstreetmap.josm.data.osm.OsmPrimitive;
+import org.openstreetmap.josm.data.osm.OsmUtils;
+import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.plugins.validator.Severity;
 import org.openstreetmap.josm.plugins.validator.Test;
 import org.openstreetmap.josm.plugins.validator.TestError;
@@ -21,28 +21,24 @@ import org.openstreetmap.josm.plugins.validator.util.Bag;
  *
  * @author stoecker
  */
-public class UnclosedWays extends Test	{
+public class UnclosedWays extends Test {
     /** The already detected errors */
     Bag<Way, Way> _errorWays;
 
     /**
      * Constructor
      */
-    public UnclosedWays()
-    {
-        super(tr("Unclosed Ways."),
-              tr("This tests if ways which should be circular are closed."));
+    public UnclosedWays() {
+        super(tr("Unclosed Ways."), tr("This tests if ways which should be circular are closed."));
     }
 
     @Override
-    public void startTest()
-    {
+    public void startTest() {
         _errorWays = new Bag<Way, Way>();
     }
 
     @Override
-    public void endTest()
-    {
+    public void endTest() {
         _errorWays = null;
     }
 
@@ -50,15 +46,15 @@ public class UnclosedWays extends Test	{
     private String etype;
     private int mode;
     private boolean force;
-    public void set(boolean f, int m, String text, String desc)
-    {
+
+    public void set(boolean f, int m, String text, String desc) {
         etype = MessageFormat.format(text, desc);
         type = tr(text, tr(desc));
         mode = m;
         force = f;
     }
-    public void set(boolean f, int m, String text)
-    {
+
+    public void set(boolean f, int m, String text) {
         etype = text;
         type = tr(text);
         mode = m;
@@ -66,39 +62,38 @@ public class UnclosedWays extends Test	{
     }
 
     @Override
-    public void visit(Way w)
-    {
+    public void visit(Way w) {
         String test;
         force = false; /* force even if end-to-end distance is long */
         type = etype = null;
         mode = 0;
 
-        if( w.deleted || w.incomplete )
+        if (w.deleted || w.incomplete)
             return;
 
         test = w.get("natural");
-        if(test != null)
+        if (test != null)
             set(!"coastline".equals(test), 1101, marktr("natural type {0}"), test);
         test = w.get("landuse");
-        if(test != null)
+        if (test != null)
             set(true, 1102, marktr("landuse type {0}"), test);
         test = w.get("amenities");
-        if(test != null)
+        if (test != null)
             set(true, 1103, marktr("amenities type {0}"), test);
         test = w.get("sport");
-        if(test != null && !test.equals("water_slide"))
+        if (test != null && !test.equals("water_slide"))
             set(true, 1104, marktr("sport type {0}"), test);
         test = w.get("tourism");
-        if(test != null)
+        if (test != null)
             set(true, 1105, marktr("tourism type {0}"), test);
         test = w.get("shop");
-        if(test != null)
+        if (test != null)
             set(true, 1106, marktr("shop type {0}"), test);
         test = w.get("leisure");
-        if(test != null)
+        if (test != null)
             set(true, 1107, marktr("leisure type {0}"), test);
         test = w.get("waterway");
-        if(test != null && test.equals("riverbank"))
+        if (test != null && test.equals("riverbank"))
             set(true, 1108, marktr("waterway type {0}"), test);
         Boolean btest = OsmUtils.getOsmBoolean(w.get("building"));
         if (btest != null && btest)
@@ -107,17 +102,21 @@ public class UnclosedWays extends Test	{
         if (btest != null && btest)
             set(true, 1130, marktr("area"));
 
-        if(type != null)
-        {
+        if (type != null) {
             LatLon s = w.nodes.get(0).coor;
-            LatLon e = w.nodes.get(w.nodes.size()-1).coor;
+            LatLon e = w.nodes.get(w.nodes.size() - 1).coor;
             /* take unclosed ways with end-to-end-distance below 10 km */
-            if(s != e && (force || s.greatCircleDistance(e) < 10000))
-            {
+            if (s != e && (force || s.greatCircleDistance(e) < 10000)) {
                 List<OsmPrimitive> primitives = new ArrayList<OsmPrimitive>();
+                List<OsmPrimitive> highlight = new ArrayList<OsmPrimitive>();
                 primitives.add(w);
-                errors.add(new TestError(this, Severity.WARNING, tr("Unclosed way"), type, etype, mode, primitives));
-                _errorWays.add(w,w);
+                // The important parts of an unclosed way are the first and 
+                // the last node which should be connected, therefore we highlight them
+                highlight.add(w.nodes.get(0)); 
+                highlight.add(w.nodes.get(w.nodes.size() - 1));
+                errors.add(new TestError(this, Severity.WARNING, tr("Unclosed way"), type, etype, mode, primitives,
+                        highlight));
+                _errorWays.add(w, w);
             }
         }
     }
