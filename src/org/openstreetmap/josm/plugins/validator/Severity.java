@@ -11,14 +11,14 @@ import org.openstreetmap.josm.Main;
 public enum Severity {
     /** Error messages */
     ERROR(tr("Errors"), "error.gif",       Main.pref.getColor(marktr("validation error"), Color.RED)),
-    /** Warning messages */ 
-    WARNING(tr("Warnings"), "warning.gif", Main.pref.getColor(marktr("validation warning"), Color.YELLOW)), 
-    /** Other messages */ 
-    OTHER(tr("Other"), "other.gif",        Main.pref.getColor(marktr("validation other"), Color.CYAN)); 
-    
+    /** Warning messages */
+    WARNING(tr("Warnings"), "warning.gif", Main.pref.getColor(marktr("validation warning"), Color.YELLOW)),
+    /** Other messages */
+    OTHER(tr("Other"), "other.gif",        Main.pref.getColor(marktr("validation other"), Color.CYAN));
+
     /** Description of the severity code */
     private final String message;
-    
+
     /** Associated icon */
     private final String icon;
 
@@ -27,12 +27,12 @@ public enum Severity {
 
     /**
      * Constructor
-     * 
+     *
      * @param message Description
      * @param icon Associated icon
      * @param color The color of this severity
      */
-    Severity(String message, String icon, Color color) 
+    Severity(String message, String icon, Color color)
     {
         this.message = message;
         this.icon = icon;
@@ -40,16 +40,16 @@ public enum Severity {
     }
 
     @Override
-    public String toString() 
+    public String toString()
     {
         return message;
     }
 
-    /** 
+    /**
      * Gets the associated icon
      * @return the associated icon
      */
-    public String getIcon() 
+    public String getIcon()
     {
         return icon;
     }
@@ -62,6 +62,6 @@ public enum Severity {
     {
         return color;
     }
-    
-    
+
+
 }

@@ -11,7 +11,7 @@ import org.openstreetmap.josm.data.osm.visitor.Visitor;
  * A visitor that aggregates all primitives it visits.
  * <p>
  * The primitives are sorted according to their type: first nodes, then ways.
- * 
+ *
  * @author frsantos
  */
 public class AgregatePrimitivesVisitor implements Visitor
@@ -22,33 +22,33 @@ public class AgregatePrimitivesVisitor implements Visitor
     /**
      * Constructor
      */
-    public AgregatePrimitivesVisitor() 
+    public AgregatePrimitivesVisitor()
     {
         aggregatedData = new LinkedList<OsmPrimitive>();
     }
 
     /**
-     * Visits a collection of primitives 
-     * @param data The collection of primitives 
+     * Visits a collection of primitives
+     * @param data The collection of primitives
      * @return The aggregated primitives
      */
-    public Collection<OsmPrimitive> visit(Collection<OsmPrimitive> data) 
+    public Collection<OsmPrimitive> visit(Collection<OsmPrimitive> data)
     {
-        for (OsmPrimitive osm : data) 
+        for (OsmPrimitive osm : data)
         {
             osm.visit(this);
         }
-        
+
         return aggregatedData;
     }
 
-    public void visit(Node n) 
+    public void visit(Node n)
     {
         if(!aggregatedData.contains(n))
             aggregatedData.add(n);
     }
 
-    public void visit(Way w) 
+    public void visit(Way w)
     {
         if(!aggregatedData.contains(w))
         {

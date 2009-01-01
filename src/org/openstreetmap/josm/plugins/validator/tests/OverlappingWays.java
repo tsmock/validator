@@ -20,7 +20,7 @@ import org.openstreetmap.josm.tools.Pair;
 
 /**
  * Tests if there are overlapping ways
- * 
+ *
  * @author frsantos
  */
 public class OverlappingWays extends Test
@@ -42,12 +42,12 @@ public class OverlappingWays extends Test
         super(tr("Overlapping ways."),
               tr("This test checks that a connection between two nodes "
                 + "is not used by more than one way."));
-        
+
     }
 
 
     @Override
-    public void startTest() 
+    public void startTest()
     {
         nodePairs = new Bag<Pair<Node,Node>, WaySegment>(1000);
     }
@@ -70,7 +70,7 @@ public class OverlappingWays extends Test
                 int railway = 0;
                 int area = 0;
 
-                for (WaySegment ws : duplicated) 
+                for (WaySegment ws : duplicated)
                 {
                     if (ws.way.get("highway") != null)
                         highway++;
@@ -141,7 +141,7 @@ public class OverlappingWays extends Test
                     ? Severity.WARNING : Severity.OTHER, tr(errortype), type, prims, duplicated));
                     ways_seen.put(current_ways, duplicated);
                 }
-                else	/* way seen, mark highlight layer only */
+                else    /* way seen, mark highlight layer only */
                 {
                     for (WaySegment ws : duplicated)
                         highlight.add(ws);

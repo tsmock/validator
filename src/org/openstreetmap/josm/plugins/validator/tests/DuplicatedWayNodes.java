@@ -65,5 +65,5 @@ public class DuplicatedWayNodes extends Test {
 
     @Override public boolean isFixable(TestError testError) {
         return testError.getTester() instanceof DuplicatedWayNodes;
-    }	
+    }
 }

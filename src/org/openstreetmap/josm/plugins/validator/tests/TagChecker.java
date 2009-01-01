@@ -130,7 +130,7 @@ public class TagChecker extends Test
     /** List of sources for spellcheck data */
     protected JList Sources;
 
-    
+
     protected static Entities entities = new Entities();
     /**
      * Constructor

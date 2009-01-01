@@ -14,10 +14,10 @@ import org.openstreetmap.josm.tools.ImageProvider;
 
 /**
  * Able to create a name and an icon for a collection of elements.
- * 
+ *
  * @author frsantos
  */
-public class MultipleNameVisitor extends NameVisitor 
+public class MultipleNameVisitor extends NameVisitor
 {
     /** The class name of the combined primitives */
     String multipleClassname;
@@ -25,12 +25,12 @@ public class MultipleNameVisitor extends NameVisitor
     String displayName;
     /** Size of the collection */
     int size;
-    
+
     /**
-     * Visits a collection of primitives 
-     * @param data The collection of primitives 
+     * Visits a collection of primitives
+     * @param data The collection of primitives
      */
-    public void visit(Collection<? extends OsmPrimitive> data) 
+    public void visit(Collection<? extends OsmPrimitive> data)
     {
         String multipleName = null;
         String multiplePluralClassname = null;
@@ -39,7 +39,7 @@ public class MultipleNameVisitor extends NameVisitor
         size = data.size();
 
         multipleClassname = null;
-        for (OsmPrimitive osm : data) 
+        for (OsmPrimitive osm : data)
         {
             String name = osm.get("name");
             if(name == null) name = osm.get("ref");
