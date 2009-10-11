@@ -7,7 +7,9 @@ import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
+import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.Command;
+import org.openstreetmap.josm.data.osm.BackreferencedDataSet;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
@@ -55,9 +57,14 @@ public class Test extends AbstractVisitor
 
     /** Whether the test is run on a partial selection data */
     protected boolean partialSelection;
-    
+
     /** the progress monitor to use */
     protected ProgressMonitor progressMonitor;
+
+    /**
+     * the data structure with child->parent references
+     */
+    protected BackreferencedDataSet backreferenceDataSet;
 
     /**
      * Constructor
@@ -92,10 +99,12 @@ public class Test extends AbstractVisitor
      * @param progressMonitor  the progress monitor 
      */
     public void startTest(ProgressMonitor progressMonitor) {
+        backreferenceDataSet = new BackreferencedDataSet(Main.main.getCurrentDataSet());
+        backreferenceDataSet.build();
         if (progressMonitor == null) {
-            this.progressMonitor = NullProgressMonitor.INSTANCE;
+                this.progressMonitor = NullProgressMonitor.INSTANCE;
         } else {
-            this.progressMonitor = progressMonitor;
+                this.progressMonitor = progressMonitor;
         }
         this.progressMonitor.beginTask(tr("Running test {0}", name));
         errors = new ArrayList<TestError>(30);
@@ -126,6 +135,7 @@ public class Test extends AbstractVisitor
     public void endTest() {
         progressMonitor.finishTask();
         progressMonitor = null;
+        backreferenceDataSet = null;
     }
 
     /**

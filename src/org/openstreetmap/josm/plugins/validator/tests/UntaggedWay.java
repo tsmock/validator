@@ -89,7 +89,7 @@ public class UntaggedWay extends Test
 
                     if( !hasName && !isRoundabout)
                         errors.add( new TestError(this, Severity.WARNING, tr("Unnamed ways"), UNNAMED_WAY, w) );
-            else if(isRoundabout)
+                    else if(isRoundabout)
                         errors.add( new TestError(this, Severity.WARNING, tr("Unnamed junction"), UNNAMED_JUNCTION, w) );
                 }
             }
