@@ -439,15 +439,19 @@ public class TagChecker extends Test
                 }
             }
         }
-        if(checkPaint && p.getErrors() != null)
+        if(checkPaint)
         {
-            for(String s: p.getErrors())
+            List<String> pe = p.getDataSet().getErrors(p);
+            if(pe != null)
             {
-                /* passing translated text also to original string, as we already
-                translated the stuff before. Makes the ignore file language dependend. */
-                errors.add( new TestError(this, Severity.WARNING, tr("Painting problem"),
-                s, s, PAINT, p) );
-                withErrors.add(p, "P");
+                for(String s: pe)
+                {
+                    /* passing translated text also to original string, as we already
+                    translated the stuff before. Makes the ignore file language dependend. */
+                    errors.add( new TestError(this, Severity.WARNING, tr("Painting problem"),
+                    s, s, PAINT, p) );
+                    withErrors.add(p, "P");
+                }
             }
         }
 
