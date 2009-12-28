@@ -546,12 +546,13 @@ public class TagChecker extends Test
                     }
                 }
             }
-            if( checkFixmes && value != null && value.length() > 0 )
-            {
-                if( (value.contains("FIXME") || value.contains("check and delete") || key.contains("todo") || key.contains("fixme"))
-                && !withErrors.contains(p, "FIXME"))
-                {
-                    errors.add( new TestError(this, Severity.OTHER, tr("FIXMES"), FIXME, p) );
+            if (checkFixmes && value != null && value.length() > 0) {
+                if ((value.toLowerCase().contains("FIXME")
+                        || value.contains("check and delete")
+                        || key.contains("todo") || key.toLowerCase().contains("fixme"))
+                        && !withErrors.contains(p, "FIXME")) {
+                    errors.add(new TestError(this, Severity.OTHER,
+                            tr("FIXMES"), FIXME, p));
                     withErrors.add(p, "FIXME");
                 }
             }
